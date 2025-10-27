@@ -10,7 +10,7 @@ def registrar_acceso():
     conectado = esta_conectado()
     hora_entrada = datetime.now()
     if espacio and conectado:
-        entrada = bd.insertHistorial(usuario_id,espacio,hora_entrada)
+        entrada = bd.insert_historial(usuario_id,espacio,hora_entrada)
         return entrada
     elif not espacio and conectado:
         return {"mensaje": "No hay espacios disponibles"}
@@ -22,11 +22,21 @@ def verificar_ocupacion(espacio):
     ocupado = sensores.get(espacio) == 0
     if ocupado and espacio in espacios_pendientes:
         espacios_pendientes.remove(espacio)
+    elif not ocupado and espacio in espacios_pendientes:
+        bd.cambiar_valido_historial(espacio)
+        espacios_pendientes.remove(espacio)
     return {"ocupado": ocupado}
 
+def obtener_estado_espacios():
+    sensores = leer_espacios()
+    return{
+        "sensores": sensores,
+        "pendientes": list(espacios_pendientes)
+    }
+
 def obtener_historial():
-    historial =  bd.getHistorial()
+    historial =  bd.get_historial()
     return historial
 
 def borrar_historial():
-    bd.purgarHistorial()
+    bd.purgar_historial()

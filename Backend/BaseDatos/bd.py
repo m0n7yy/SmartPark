@@ -10,7 +10,7 @@ def conectar():
     conexion = sql.connect(DB_PATH)
     return conexion
 
-def insertHistorial(id_usuario,esp_asig,fecha_his):
+def insert_historial(id_usuario,esp_asig,fecha_his):
     try:
         conexion = conectar()
     except sql.DatabaseError as e:
@@ -20,8 +20,7 @@ def insertHistorial(id_usuario,esp_asig,fecha_his):
     datos = (id_usuario,esp_asig,fecha_his)
     cursor.execute(sql,datos)
     conexion.commit()
-
-    cursor.execute("SELECT idUsuario,espAsig,fechaHis FROM historial ORDER BY idHis DESC LIMIT 1")
+    cursor.execute("SELECT idUsuario,espAsig,fechaHis,valido FROM historial ORDER BY idHis DESC LIMIT 1")
     resultado = cursor.fetchone()
 
     if resultado is None:
@@ -30,18 +29,26 @@ def insertHistorial(id_usuario,esp_asig,fecha_his):
         return{
             "usuario_id" : id_usuario,
             "espacio_asignado": esp_asig,
-            "hora_entrada": fecha_his.strftime("%H:%M:%S")
+            "hora_entrada": fecha_his.strftime("%H:%M:%S"),
         }
     return {
         "usuario_id" : resultado[0],
         "espacio_asignado" : resultado[1],
-        "hora_entrada" : resultado[2]
+        "hora_entrada" : resultado[2],
     }
 
-def getHistorial():
+def cambiar_valido_historial(espacio):
     conexion = conectar()
     cursor = conexion.cursor()
-    cursor.execute("SELECT idHis, idUsuario, espAsig, fechaHis from historial ORDER BY idHis DESC LIMIT 10")
+    sql = "UPDATE historial SET valido = 0 WHERE idHis = (SELECT idHis FROM historial WHERE espAsig = ? AND valido = 1 ORDER BY idHis DESC LIMIT 1)"
+    cursor.execute(sql,espacio)
+    conexion.commit()
+    conexion.close()
+
+def get_historial():
+    conexion = conectar()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT idHis, idUsuario, espAsig, fechaHis, valido from historial ORDER BY idHis DESC LIMIT 10")
     resultados = cursor.fetchall()
     cursor.close()
     conexion.close()
@@ -52,11 +59,12 @@ def getHistorial():
             "historial_id" : fila[0],
             "usuario_id" : fila[1],
             "espacio_asignado": fila[2],
-            "hora_entrada" : fila[3]
+            "hora_entrada" : fila[3],
+            "valido": fila[4]
         })
     return historial
 
-def purgarHistorial():
+def purgar_historial():
     fecha_limite = (datetime.now() - timedelta(days=2)).date()
     conexion = conectar()
     cursor = conexion.cursor()

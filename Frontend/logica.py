@@ -34,6 +34,22 @@ def iniciar_verificacion_automatica(resultado,ventana):
 
     verificar_periodicamente()
 
+def actualizar_visual(estado_botones):
+    estado = app.obtener_estado_espacios()
+    sensores = estado["sensores"]
+    pendientes = estado["pendientes"]
+
+    for etiqueta, boton in estado_botones.items():
+        if etiqueta in pendientes:
+            color = "yellow"
+        elif sensores.get(etiqueta) == 0:
+            color = "red"
+        elif sensores.get(etiqueta) == 1:
+            color = "green"
+        else:
+            color = "gray"
+        boton.config(bg=color)
+
 def mostrar_historial(historial_texto):
     historial = app.obtener_historial()
     texto = "\n".join([f"{h['historial_id']}| Usuario {h['usuario_id']} → {h['espacio_asignado']} @ {h['hora_entrada']}" for h in historial])
