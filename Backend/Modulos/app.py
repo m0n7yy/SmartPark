@@ -17,14 +17,16 @@ def registrar_acceso():
     else:
         return {"mensaje": "[ERROR] No hay conexion a Arduino"}
 
-def verificar_ocupacion(espacio):
+def verificar_ocupacion(espacio, forzar_invalido=False):
+    print(f"entrando verificar_ocupacion{espacio}, forzar {forzar_invalido}")
     sensores = leer_espacios()
     ocupado = sensores.get(espacio) == 0
     if ocupado and espacio in espacios_pendientes:
         espacios_pendientes.remove(espacio)
-    elif not ocupado and espacio in espacios_pendientes:
+    elif not ocupado and forzar_invalido:
+        print(f"condicion de invalidacion cumplida {espacio}")
         bd.cambiar_valido_historial(espacio)
-        espacios_pendientes.remove(espacio)
+        espacios_pendientes.discard(espacio)
     return {"ocupado": ocupado}
 
 def obtener_estado_espacios():

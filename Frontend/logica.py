@@ -14,7 +14,6 @@ def registrar(resultado, ventana):
     else:
         resultado.set(datos["mensaje"])
         return False
-    #mostrar_historial(historial_texto)
 
 def iniciar_verificacion_automatica(resultado,ventana):
     if not espacio_actual[0]:
@@ -22,13 +21,17 @@ def iniciar_verificacion_automatica(resultado,ventana):
     intentos = [0]
 
     def verificar_periodicamente():
+        print("Ejecutando verificacion logica.py")
         estado = app.verificar_ocupacion(espacio_actual[0])
         if estado["ocupado"]:
             resultado.set(f"Espacio {espacio_actual[0]} ocupado")
         else:
             intentos[0] += 1
+            print(f"Intento {intentos[0]} - espacio {espacio_actual[0]}")
             if intentos[0] >= 10:
+                print(f"limite de intentos alcanzado")
                 resultado.set(f"Espacio {espacio_actual[0]} no ocupado aún")
+                app.verificar_ocupacion(espacio_actual[0],forzar_invalido=True)
                 return
             ventana.after(2000, verificar_periodicamente)
 
@@ -52,7 +55,7 @@ def actualizar_visual(estado_botones):
 
 def mostrar_historial(historial_texto):
     historial = app.obtener_historial()
-    texto = "\n".join([f"{h['historial_id']}| Usuario {h['usuario_id']} → {h['espacio_asignado']} @ {h['hora_entrada']}" for h in historial])
+    texto = "\n".join([f"{h['historial_id']}| Usuario {h['usuario_id']} → {h['espacio_asignado']} @ {h['hora_entrada']} => {h['valido']}" for h in historial])
     historial_texto.set(texto)
     return historial_texto
 

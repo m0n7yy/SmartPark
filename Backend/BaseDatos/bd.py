@@ -41,9 +41,10 @@ def cambiar_valido_historial(espacio):
     conexion = conectar()
     cursor = conexion.cursor()
     sql = "UPDATE historial SET valido = 0 WHERE idHis = (SELECT idHis FROM historial WHERE espAsig = ? AND valido = 1 ORDER BY idHis DESC LIMIT 1)"
-    cursor.execute(sql,espacio)
+    cursor.execute(sql,(espacio))
     conexion.commit()
     conexion.close()
+    print(f"marcando como invalido {espacio}")
 
 def get_historial():
     conexion = conectar()
